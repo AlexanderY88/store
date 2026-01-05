@@ -4,9 +4,10 @@ const router = express.Router();
 const joi = require("joi");
 const _ = require("lodash");
 const Product = require("../models/Product");
+const auth = require("../middlewares/auth");
 
 // get all products route with function find
-router.get("/", async (req,res) => {
+router.get("/", auth, async (req,res) => {
     try {
         const products = await Product.find();
         if (products.length === 0) return res.status(404).send("No products found");
@@ -25,7 +26,7 @@ const checkNewProductBody = joi.object({
     description: joi.string().required()
 }); 
 // add new product with function save
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
     try {
         // check body with joi
         const { error } = checkNewProductBody.validate(req.body);
@@ -43,7 +44,7 @@ router.post("/", async (req, res) => {
 });
 
 // get product by id 
-router.get("/:id", async (req,res) => {
+router.get("/:id", auth, async (req,res) => {
     try {
         // find product by productId
         const product = await Product.findOne({productId: req.params.id});
@@ -60,7 +61,7 @@ router.get("/:id", async (req,res) => {
 // update existing product by id - use findOneAndUpdate()
 // in the function I use the joi validation from add new product because it is the same body structure
 
-router.put("/:id", async (req,res) => {
+router.put("/:id", auth, async (req,res) => {
     try {
         // check body with joi
         const {error} = checkNewProductBody.validate(req.body);
@@ -79,7 +80,7 @@ router.put("/:id", async (req,res) => {
 // delete product by id - use findOneAndDelete()
 // I tried to use findOneAndRemove but got an error in postman:     "message": "Product.findOneAndRemove is not a function". After searching I found that this function is deprecated and I should use findOneAndDelete instead.
 
-router.delete("/:id", async (req,res) => {
+router.delete("/:id", auth, async (req,res) => {
     try {
         const product = await Product.findOneAndDelete({productId: req.params.id});
         if (!product) return res.status(404).send("Product not found");
